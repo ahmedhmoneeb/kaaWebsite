@@ -49,6 +49,32 @@ curl_setopt_array($curl, array(
 // outputs the username that owns the running php/httpd process
 // (on a system with the "whoami" executable in the path)
 $msg = $_GET['message'];
+$deviceName = $_GET['deviceName'];
+$red = $_GET['red'];
+$green = $_GET['green'];
+$blue = $_GET['blue'];
+
+if ($deviceName != "")
+{
+if($red == 'on')$red = 'ON';
+else $red = 'OFF';
+
+if($green == 'on')$green = 'ON';
+else $green = 'OFF';
+
+if($blue == 'on')$blue = 'ON';
+else $blue = 'OFF';
+
+$output = shell_exec('curl -v -S -u tenantDeveloper1:tenantDeveloper1 -X POST -H \'Content-Type: application/json\' -d\'{"applicationId":"32768","schemaId":"65538","endpointGroupId":"32768","majorVersion":"3","minorVersion":"0","description":"Test Configuration","body": "{\\"RaspSchema\\":{\\"array\\":[{\\"name\\":\\" ' . $deviceName .' \\",\\"red\\":\\"' . $red .'\\",\\"green\\":\\"' . $green .'\\",\\"blue\\":\\"' . $blue .'\\",\\"__uuid\\":{\\"org.kaaproject.configuration.uuidT\\":\\"\\\\u0000\\u00b1Z:\\u008f\\u00cfB\\u00ab\\u00b82^\\u00b6S\\\\\\"\\u007f\\u00a3\\"}}]},\\"__uuid\\":{\\"org.kaaproject.configuration.uuidT\\":\\"\\\\u001A?i\\u008a\\u0097\\u0092J\\u00ca\\u00a5\\u00d1 \\u00d5X\\\\u001F\\\\u0001\\u00a6\\"}}"}\' "http://88.85.224.107:8080/kaaAdmin/rest/api/configuration" | python -mjson.tool');
+
+$output = json_decode($output);
+$confID =  $output->id;
+//echo $confID;
+$output = shell_exec('curl -v -S -u tenantDeveloper1:tenantDeveloper1 -X POST -H \'Content-Type: text/plain\' -d\'' . $confID . '\' "http://88.85.224.107:8080/kaaAdmin/rest/api/activateConfiguration" | python -mjson.tool');
+}
+//echo $output;
+//print_r(array_keys($output));
+/**
 $output = shell_exec('rm msg.json');
 $file = 'msg.json';
 
@@ -58,7 +84,7 @@ file_put_contents($file, json_encode($current));
 
 $output = shell_exec('curl -v -S -u tenantDeveloper1:tenantDeveloper1 -F\'notification={"applicationId":"32768","schemaId":"32771","topicId":"65538","type":"USER"};type=application/json\' -F file=@msg.json "http://88.85.224.107:8080/kaaAdmin/rest/api/sendNotification" | python -mjson.tool');
 //echo "<pre>$output</pre>";
-
+**/
 
 
 print <<<_HTML_
@@ -72,35 +98,58 @@ print <<<_HTML_
 
 <body>
 <h1>Curpha IOT Control Dashboard</h1>
-<table>
-<tr>
-<td>
-  <h1>Sending Notifications </h1>
-<form class="cf" method="GET" action="">
-  <div class="half left cf">
-    <h4>Notifications Should Appear HERE!$resp</h4>
 
-  </div>
-  <div class="half right cf">
+<div style="position:relative;width:50%;float:left;">
+<h1>Sending Notifications </h1>
+<form class="cf" method="GET" action="">
+    <h4>Notifications Should Appear HERE!$resp</h4>
     <textarea name="message" type="text" id="input-message" placeholder="Message"></textarea>
     <input type="submit" value="Submit" id="input-submit">
-  </div>  
-  </td>
+</form>
+</div>
+
+
+<div style="position:relative;width:50%;float:left;">
+<form class="cf" method="GET" action="">
+<h1> Configuration Testing </h1>
+<input type="text" name="deviceName" placeholder="Device Name">  
+
+<table>
+<tr>
+<td>Red</td>
 <td>
-</form>
- 
-<form class="cf">
-  <div class="half left cf">
+<label class="switch">
+  <input type="checkbox" name="red">
+  <div class="slider round"></div>
+</label>
+</td>
+</tr>
 
+<tr>
+<td>Green</td>
+<td>
+<label class="switch">
+  <input type="checkbox" name="green">
+  <div class="slider round"></div>
+</label>
+</td>
+</tr>
 
-  </div>
-  <div class="half right cf">
-    
-  </div>  
-</form>
+<tr>
+<td>Blue</td>
+<td>
+<label class="switch">
+  </p><input type="checkbox" name="blue">
+  <div class="slider round"></div>
+</label>
 </td>
 </tr>
 </table>
+<input type="submit" value="Submit" id="input-submit">
+
+</form>
+</div>
+  
 </body>
 </html>
 _HTML_;
